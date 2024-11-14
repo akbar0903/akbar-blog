@@ -2,10 +2,7 @@ package com.akbar.controller;
 
 import com.akbar.entity.Admin;
 import com.akbar.service.AdminService;
-import com.akbar.utils.JwtUtil;
-import com.akbar.utils.Md5Util;
-import com.akbar.utils.Result;
-import com.akbar.utils.ThreadLocalUtil;
+import com.akbar.utils.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,8 +89,8 @@ public class AdminController {
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         Admin admin = adminService.getOne(queryWrapper);
-        String salt = admin.getSalt();
-        if (!Md5Util.getMD5String(oldPassword + salt).equals(admin.getPassword())) {
+        String oldSalt = admin.getSalt();
+        if (!Md5Util.getMD5String(oldPassword + oldSalt).equals(admin.getPassword())) {
             return Result.error("原密码错误！");
         }
 
@@ -102,8 +99,10 @@ public class AdminController {
             return Result.error("两次密码输入不一致！");
         }
 
-        // 更新密码
-        admin.setPassword(Md5Util.getMD5String(newPassword + salt));
+        // 生成新的盐，并更新密码
+        String newSalt = RandomStringUtil.generateRandomString();
+        admin.setSalt(newSalt);
+        admin.setPassword(Md5Util.getMD5String(newPassword + newSalt));
         boolean result = adminService.updateById(admin);
         if (result) {
             // 清除redis中的token
