@@ -2,6 +2,10 @@ package com.akbar.utils;
 
 import java.security.SecureRandom;
 
+
+/**
+ * 产生32位的随机字符串，包括大小写字母和数字
+ */
 public class RandomStringUtil {
 
     // 字符库，包括大小写字母和数字

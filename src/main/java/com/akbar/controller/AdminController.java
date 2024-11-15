@@ -1,7 +1,9 @@
 package com.akbar.controller;
 
 import com.akbar.entity.Admin;
+import com.akbar.entity.Log;
 import com.akbar.service.AdminService;
+import com.akbar.service.LogService;
 import com.akbar.utils.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.validation.constraints.Pattern;
@@ -27,10 +29,13 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    private final LogService logService;
+
     @Autowired
-    public AdminController(AdminService adminService, StringRedisTemplate redisTemplate) {
+    public AdminController(AdminService adminService, StringRedisTemplate redisTemplate, LogService logService) {
         this.adminService = adminService;
         this.redisTemplate = redisTemplate;
+        this.logService = logService;
     }
 
     /**
@@ -63,6 +68,15 @@ public class AdminController {
             // 把token存储到redis中
             ValueOperations<String, String> operations = redisTemplate.opsForValue();
             operations.set(token, token, 12, TimeUnit.HOURS);
+
+            // 记录登录日志
+            Log log = new Log();
+            log.setOperationType("登录");
+            log.setOperator(admin.getUsername());
+            log.setDetails("登录成功！");
+            log.setLogLevel("primary");
+            log.setAdminId(admin.getId());
+            logService.save(log);
 
             // 返回token
             return Result.success(token);
@@ -114,6 +128,16 @@ public class AdminController {
         admin.setPassword(Md5Util.getMD5String(newPassword + newSalt));
         boolean result = adminService.updateById(admin);
         if (result) {
+
+            // 记录修改密码日志
+            Log log = new Log();
+            log.setOperationType("修改密码");
+            log.setOperator(admin.getUsername());
+            log.setDetails("修改密码成功！");
+            log.setLogLevel("danger");
+            log.setAdminId(admin.getId());
+            logService.save(log);
+
             // 清除redis中的token
             ValueOperations<String, String> operations = redisTemplate.opsForValue();
             operations.getOperations().delete(token);
@@ -169,6 +193,15 @@ public class AdminController {
         if (!result) {
             return Result.error("更新失败！");
         }
+
+        // 记录修改信息日志
+        Log log = new Log();
+        log.setOperationType("修改信息");
+        log.setOperator((String) map.get("username"));
+        log.setDetails("管理员信息修改成功！");
+        log.setLogLevel("warning");
+        log.setAdminId(id);
+        logService.save(log);
 
         return Result.success("更新成功！");
     }
