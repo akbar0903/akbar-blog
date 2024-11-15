@@ -6,6 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * 注册拦截器，
+ * 通过 addInterceptors 方法将该拦截器添加到 Spring 的拦截器链中。
+ */
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
@@ -18,7 +22,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * 注册登录拦截器
+     * 
      * @param registry
      * 默认是拦截所有的接口，可以通过excludePathPatterns方法排除不需要拦截的接口
      */

@@ -20,18 +20,27 @@ import java.util.Map;
 public class LoginInterceptor implements HandlerInterceptor {
 
     // 注入redis依赖
+    private final StringRedisTemplate redisTemplate;
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    public LoginInterceptor(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 令牌验证
         String token = request.getHeader("Authorization");
+
+        if (token == null) {
+            response.setStatus(401);
+            return false;
+        }
+
         try {
             //从redis中获取令牌
             ValueOperations<String, String> operations = redisTemplate.opsForValue();
             String redisToken = operations.get(token);
-            if (token == null || !token.equals(redisToken)) {
+            if (!token.equals(redisToken)) {
                 throw new RuntimeException("Token验证失败");
             }
 

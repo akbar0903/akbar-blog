@@ -5,10 +5,12 @@ import com.akbar.service.AdminService;
 import com.akbar.utils.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.validation.constraints.Pattern;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -17,32 +19,35 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/admin")
+@Validated   // 开启参数校验(@Validated用于单个字段或者方法参数的校验，@Valid用于对象校验)
 public class AdminController {
 
     // 注入redisTemplate
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     private final AdminService adminService;
 
     @Autowired
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService, StringRedisTemplate redisTemplate) {
         this.adminService = adminService;
+        this.redisTemplate = redisTemplate;
     }
 
     /**
      * 管理员登录
+     * @param username
+     * @param password
+     * @return
      */
     @PostMapping("/login")
     public Result login(
             @RequestParam(value = "username") @Pattern(regexp = "^\\S{5,16}$", message = "用户名长度至少5位，最多16位") String username,
-            @RequestParam(value = "password") /*@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字")*/ String password) {
+            @RequestParam(value = "password") @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字") String password) {
 
         // 判断用户是否存在(根据用户名查询用户)
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         Admin admin = adminService.getOne(queryWrapper);
-        System.out.println("------------------"+admin+"------------------");
         if (admin == null) {
             return Result.error("该用户不存在！");
         }
@@ -53,7 +58,6 @@ public class AdminController {
             Map<String, Object> claims = new HashMap<>();
             claims.put("id", admin.getId());
             claims.put("username", admin.getUsername());
-            System.out.println("------------------"+claims+"------------------");
             String token = JwtUtil.generateToken(claims);
 
             // 把token存储到redis中
@@ -70,11 +74,16 @@ public class AdminController {
 
     /**
      * 更新管理员密码
+     * @param oldPassword
+     * @param newPassword
+     * @param confirmPassword
+     * @param token
+     * @return
      */
     @PatchMapping
     public Result updatePassword(
             @RequestParam(value = "oldPassword") String oldPassword,
-            @RequestParam(value = "newPassword") /*@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字") */String newPassword,
+            @RequestParam(value = "newPassword") @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字") String newPassword,
             @RequestParam(value = "confirmPassword") String confirmPassword,
             @RequestHeader(value = "Authorization") String token) {
 
@@ -91,7 +100,7 @@ public class AdminController {
         Admin admin = adminService.getOne(queryWrapper);
         String oldSalt = admin.getSalt();
         if (!Md5Util.getMD5String(oldPassword + oldSalt).equals(admin.getPassword())) {
-            return Result.error("原密码错误！");
+            return Result.error("身份验证失败！");
         }
 
         // 判断新密码和确认密码是否一致
@@ -112,5 +121,70 @@ public class AdminController {
         }
 
         return Result.error("密码修改失败！");
+    }
+
+
+    /**
+     * 更新管理员信息
+     * @param nickname
+     * @param avatar
+     * @param githubUrl
+     * @param giteeUrl
+     * @param biliUrl
+     * @return
+     */
+    @PatchMapping("/updateInfo")
+    public Result updateInfo(
+            @RequestParam(value = "nickname",required = false) String nickname,
+            @RequestParam(value = "avatar",required = false) @URL(message = "无效的头像 URL") String avatar,
+            @RequestParam(value = "githubUrl",required = false) @URL(message = "无效的 Github URL") String githubUrl,
+            @RequestParam(value = "giteeUrl",required = false) @URL(message = "无效的 Gitee URL") String giteeUrl,
+            @RequestParam(value = "biliUrl",required = false) @URL(message = "无效的 Bilibili URL") String biliUrl) {
+
+        Admin admin = new Admin();
+        // 判断参数是否为空，防止不必要的更新
+        if (nickname != null) {
+            admin.setNickname(nickname);
+        }
+        if (avatar != null) {
+            admin.setAvatar(avatar);
+        }
+        if (githubUrl != null) {
+            admin.setGithubUrl(githubUrl);
+        }
+        if (giteeUrl != null) {
+            admin.setGiteeUrl(giteeUrl);
+        }
+        if (biliUrl != null) {
+            admin.setBiliUrl(biliUrl);
+        }
+
+        Map<String, Object> map = ThreadLocalUtil.get();
+        Integer id = (Integer) map.get("id");
+        QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id);
+
+        boolean result = adminService.update(admin, queryWrapper);
+
+        if (!result) {
+            return Result.error("更新失败！");
+        }
+
+        return Result.success("更新成功！");
+    }
+
+
+    /**
+     * 获取管理员信息
+     * @return
+     */
+    @GetMapping
+    public Result<Admin> getAdminInfo() {
+        Map<String, Object> map = ThreadLocalUtil.get();
+        Integer id = (Integer) map.get("id");
+
+        Admin admin = adminService.getById(id);
+
+        return Result.success(admin);
     }
 }
