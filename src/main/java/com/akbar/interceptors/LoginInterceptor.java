@@ -1,5 +1,6 @@
 package com.akbar.interceptors;
 
+import com.akbar.utils.IpUtil;
 import com.akbar.utils.JwtUtil;
 import com.akbar.utils.ThreadLocalUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,11 +47,16 @@ public class LoginInterceptor implements HandlerInterceptor {
 
             Map<String, Object> claims = JwtUtil.parseToken(token);
             //把业务数据存到ThreadLocal中
-            ThreadLocalUtil.set(claims);
+            ThreadLocalUtil.setClaims(claims);
+
+            // 获取客户端IP地址
+            String ipAddress = IpUtil.getClientIp(request);
+            ThreadLocalUtil.setIP(ipAddress);
+
             //放行
             return true;
         } catch (Exception e) {
-            response.setStatus(401);    //未授权
+            response.setStatus(401);    //未授权401错误
             return false;
         }
     }

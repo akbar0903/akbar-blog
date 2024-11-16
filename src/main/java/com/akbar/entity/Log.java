@@ -3,19 +3,25 @@ package com.akbar.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
 @TableName("tb_log")
 public class Log {
     @TableId(value = "id", type = IdType.AUTO)
+    @JsonIgnore
     private Integer id;
     private String operationType;
     private String operator;
     private String details;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime operatedTime;
+    @JsonIgnore
     private Integer adminId;
     private String logLevel;
+    private String ipAddress;
 
 
     public Integer getId() {
@@ -65,5 +71,12 @@ public class Log {
     }
     public void setLogLevel(String logLevel) {
         this.logLevel = logLevel;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 }

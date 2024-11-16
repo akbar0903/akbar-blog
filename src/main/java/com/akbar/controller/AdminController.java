@@ -6,6 +6,7 @@ import com.akbar.service.AdminService;
 import com.akbar.service.LogService;
 import com.akbar.utils.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,8 @@ public class AdminController {
     @PostMapping("/login")
     public Result login(
             @RequestParam(value = "username") @Pattern(regexp = "^\\S{5,16}$", message = "用户名长度至少5位，最多16位") String username,
-            @RequestParam(value = "password") @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字") String password) {
+            @RequestParam(value = "password") @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", message = "密码至少6位，且必须包含大小写字母和数字") String password,
+            HttpServletRequest request) {
 
         // 判断用户是否存在(根据用户名查询用户)
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
@@ -75,6 +77,11 @@ public class AdminController {
             log.setOperator(admin.getUsername());
             log.setDetails("登录成功！");
             log.setLogLevel("primary");
+
+            // 手动获取客户端IP地址
+            String ipAddress = IpUtil.getClientIp(request);
+
+            log.setIpAddress(ipAddress);
             log.setAdminId(admin.getId());
             logService.save(log);
 
@@ -107,7 +114,7 @@ public class AdminController {
         }
 
         //校验原密码是否正确
-        Map<String, Object> map = ThreadLocalUtil.get();
+        Map<String, Object> map = ThreadLocalUtil.getClaims();
         String username = (String) map.get("username");
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
@@ -135,6 +142,8 @@ public class AdminController {
             log.setOperator(admin.getUsername());
             log.setDetails("修改密码成功！");
             log.setLogLevel("danger");
+            String ipAddress = ThreadLocalUtil.getIP();
+            log.setIpAddress(ipAddress);
             log.setAdminId(admin.getId());
             logService.save(log);
 
@@ -183,7 +192,7 @@ public class AdminController {
             admin.setBiliUrl(biliUrl);
         }
 
-        Map<String, Object> map = ThreadLocalUtil.get();
+        Map<String, Object> map = ThreadLocalUtil.getClaims();
         Integer id = (Integer) map.get("id");
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id);
@@ -200,6 +209,8 @@ public class AdminController {
         log.setOperator((String) map.get("username"));
         log.setDetails("管理员信息修改成功！");
         log.setLogLevel("warning");
+        String ipAddress = ThreadLocalUtil.getIP();
+        log.setIpAddress(ipAddress);
         log.setAdminId(id);
         logService.save(log);
 
@@ -213,7 +224,7 @@ public class AdminController {
      */
     @GetMapping
     public Result<Admin> getAdminInfo() {
-        Map<String, Object> map = ThreadLocalUtil.get();
+        Map<String, Object> map = ThreadLocalUtil.getClaims();
         Integer id = (Integer) map.get("id");
 
         Admin admin = adminService.getById(id);
