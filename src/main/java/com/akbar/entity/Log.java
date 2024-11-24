@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @TableName("tb_log")
 public class Log {
     @TableId(value = "id", type = IdType.AUTO)
-    @JsonIgnore
     private Integer id;
     private String operationType;
     private String operator;

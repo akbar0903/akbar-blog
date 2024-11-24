@@ -3,16 +3,13 @@ package com.akbar.controller;
 import com.akbar.entity.Log;
 import com.akbar.service.LogService;
 import com.akbar.utils.Result;
-import com.akbar.utils.ThreadLocalUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/log")
-@CrossOrigin
 public class LogController {
 
     private final LogService logService;
@@ -35,8 +32,12 @@ public class LogController {
         // 构建分页对象, 传入当前页码和每页条数
         Page<Log> logPage = new Page<>(pageNum, pageSize);
 
+        QueryWrapper<Log> queryWrapper = new QueryWrapper<>();
+        // 根据 operatedTime 字段降序排列
+        queryWrapper.orderByDesc("operated_time");
+
         // 执行分页查询
-        Page<Log> pageResult = logService.page(logPage);
+        Page<Log> pageResult = logService.page(logPage, queryWrapper);
 
         return Result.success(pageResult);
     }
