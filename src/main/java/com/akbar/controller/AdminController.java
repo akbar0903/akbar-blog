@@ -2,8 +2,10 @@ package com.akbar.controller;
 
 import com.akbar.entity.Admin;
 import com.akbar.entity.Log;
+import com.akbar.entity.UserAvatarHistory;
 import com.akbar.service.AdminService;
 import com.akbar.service.LogService;
+import com.akbar.service.UserAvatarHistoryService;
 import com.akbar.utils.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,11 +34,14 @@ public class AdminController {
 
     private final LogService logService;
 
+    private UserAvatarHistoryService userAvatarHistoryService;
+
     @Autowired
-    public AdminController(AdminService adminService, StringRedisTemplate redisTemplate, LogService logService) {
+    public AdminController(AdminService adminService, StringRedisTemplate redisTemplate, LogService logService, UserAvatarHistoryService userAvatarHistoryService) {
         this.adminService = adminService;
         this.redisTemplate = redisTemplate;
         this.logService = logService;
+        this.userAvatarHistoryService = userAvatarHistoryService;
     }
 
     /**
@@ -180,6 +185,19 @@ public class AdminController {
             admin.setNickname(nickname);
         }
         if (avatar != null) {
+            QueryWrapper<UserAvatarHistory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("avatar_url", avatar);
+            // 如果该头像没有在历史记录中，则把这个头像添加到历史记录中
+            if (userAvatarHistoryService.count(queryWrapper) == 0) {
+                admin.setAvatar(avatar);
+                // 记录用户头像修改历史
+                UserAvatarHistory userAvatarHistory = new UserAvatarHistory();
+                Map<String, Object> map = ThreadLocalUtil.getClaims();
+                Integer userId = (Integer) map.get("id");
+                userAvatarHistory.setUserId(userId);
+                userAvatarHistory.setAvatarUrl(avatar);
+                userAvatarHistoryService.save(userAvatarHistory);
+            }
             admin.setAvatar(avatar);
         }
         if (githubUrl != null) {
