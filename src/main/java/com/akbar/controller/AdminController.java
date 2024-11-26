@@ -46,6 +46,7 @@ public class AdminController {
 
     /**
      * 管理员登录
+     *
      * @param username
      * @param password
      * @return
@@ -165,40 +166,21 @@ public class AdminController {
     /**
      * 更新管理员信息
      * @param nickname
-     * @param avatar
-     * @param githubUrl
      * @param giteeUrl
      * @param biliUrl
      * @return
      */
     @PatchMapping("/updateInfo")
     public Result updateInfo(
-            @RequestParam(value = "nickname",required = false) String nickname,
-            @RequestParam(value = "avatar",required = false) @URL(message = "无效的头像 URL") String avatar,
-            @RequestParam(value = "githubUrl",required = false) @URL(message = "无效的 Github URL") String githubUrl,
-            @RequestParam(value = "giteeUrl",required = false) @URL(message = "无效的 Gitee URL") String giteeUrl,
-            @RequestParam(value = "biliUrl",required = false) @URL(message = "无效的 Bilibili URL") String biliUrl) {
+            @RequestParam(value = "nickname", required = false) String nickname,
+            @RequestParam(value = "githubUrl", required = false) @URL(message = "无效的 Github URL") String githubUrl,
+            @RequestParam(value = "giteeUrl", required = false) @URL(message = "无效的 Gitee URL") String giteeUrl,
+            @RequestParam(value = "biliUrl", required = false) @URL(message = "无效的 Bilibili URL") String biliUrl) {
 
         Admin admin = new Admin();
         // 判断参数是否为空，防止不必要的更新
         if (nickname != null) {
             admin.setNickname(nickname);
-        }
-        if (avatar != null) {
-            QueryWrapper<UserAvatarHistory> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("avatar_url", avatar);
-            // 如果该头像没有在历史记录中，则把这个头像添加到历史记录中
-            if (userAvatarHistoryService.count(queryWrapper) == 0) {
-                admin.setAvatar(avatar);
-                // 记录用户头像修改历史
-                UserAvatarHistory userAvatarHistory = new UserAvatarHistory();
-                Map<String, Object> map = ThreadLocalUtil.getClaims();
-                Integer userId = (Integer) map.get("id");
-                userAvatarHistory.setUserId(userId);
-                userAvatarHistory.setAvatarUrl(avatar);
-                userAvatarHistoryService.save(userAvatarHistory);
-            }
-            admin.setAvatar(avatar);
         }
         if (githubUrl != null) {
             admin.setGithubUrl(githubUrl);
@@ -211,9 +193,9 @@ public class AdminController {
         }
 
         Map<String, Object> map = ThreadLocalUtil.getClaims();
-        Integer id = (Integer) map.get("id");
+        Integer adminId = (Integer) map.get("id");
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", id);
+        queryWrapper.eq("id", adminId);
 
         boolean result = adminService.update(admin, queryWrapper);
 
@@ -229,7 +211,7 @@ public class AdminController {
         log.setLogLevel("warning");
         String ipAddress = ThreadLocalUtil.getIP();
         log.setIpAddress(ipAddress);
-        log.setAdminId(id);
+        log.setAdminId(adminId);
         logService.save(log);
 
         return Result.success("更新成功！");
@@ -243,10 +225,53 @@ public class AdminController {
     @GetMapping
     public Result<Admin> getAdminInfo() {
         Map<String, Object> map = ThreadLocalUtil.getClaims();
-        Integer id = (Integer) map.get("id");
+        Integer adminId = (Integer) map.get("id");
 
-        Admin admin = adminService.getById(id);
+        Admin admin = adminService.getById(adminId);
 
         return Result.success(admin);
     }
+
+
+    /**
+     * 更新管理员头像
+     * @param avatar
+     * @return
+     */
+    @PatchMapping("/updateAvatar")
+    public Result updateAvatar(@RequestParam(value = "avatar") @URL(message = "无效的头像 URL") String avatar) {
+        Admin admin = new Admin();
+        admin.setAvatar(avatar);
+        Map<String, Object> map = ThreadLocalUtil.getClaims();
+        Integer adminId = (Integer) map.get("id");
+        QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", adminId);
+        boolean result = adminService.update(admin, queryWrapper);
+        if (!result) {
+            return Result.error("更新失败！");
+        }
+
+        QueryWrapper<UserAvatarHistory> avatarHistoryWrapper = new QueryWrapper<>();
+        avatarHistoryWrapper.eq("avatar_url", avatar);
+        // 如果该头像没有在历史记录中，则把这个头像添加到历史记录中
+        if (userAvatarHistoryService.count(avatarHistoryWrapper) == 0) {
+            UserAvatarHistory userAvatarHistory = new UserAvatarHistory();
+            userAvatarHistory.setUserId(adminId);
+            userAvatarHistory.setAvatarUrl(avatar);
+            userAvatarHistoryService.save(userAvatarHistory);
+        }
+
+        // 记录修改头像日志
+        Log log = new Log();
+        log.setOperationType("修改头像");
+        log.setOperator((String) map.get("username"));
+        log.setDetails("管理员头像修改成功！");
+        log.setLogLevel("warning");
+        String ipAddress = ThreadLocalUtil.getIP();
+        log.setIpAddress(ipAddress);
+        log.setAdminId(adminId);
+        logService.save(log);
+        return Result.success("更新成功！");
+    }
 }
+
