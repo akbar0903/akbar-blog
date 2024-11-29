@@ -1,6 +1,6 @@
 package com.akbar.controller;
 
-import com.akbar.entity.Log;
+import com.akbar.domain.entity.Log;
 import com.akbar.service.LogService;
 import com.akbar.utils.Result;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

@@ -1,6 +1,6 @@
 package com.akbar.service.impl;
 
-import com.akbar.entity.Log;
+import com.akbar.domain.entity.Log;
 import com.akbar.mapper.LogMapper;
 import com.akbar.service.LogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

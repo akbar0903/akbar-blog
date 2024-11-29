@@ -1,6 +1,6 @@
 package com.akbar.service.impl;
 
-import com.akbar.entity.Category;
+import com.akbar.domain.entity.Category;
 import com.akbar.mapper.CategoryMapper;
 import com.akbar.service.CategoryService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

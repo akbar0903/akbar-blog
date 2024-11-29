@@ -1,7 +1,7 @@
 package com.akbar.controller;
 
-import com.akbar.entity.Category;
-import com.akbar.entity.Log;
+import com.akbar.domain.entity.Category;
+import com.akbar.domain.entity.Log;
 import com.akbar.service.CategoryService;
 import com.akbar.service.LogService;
 import com.akbar.utils.Result;
@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -51,6 +52,15 @@ public class CategoryController {
         Page<Category> categoryPage = categoryService.page(page, queryWrapper);
 
         return Result.success(categoryPage);
+    }
+
+    /**
+     * 获取文章分类列表（不分页）
+     * @return
+     */
+    @GetMapping("/noPage")
+    public Result<List<Category>> getNoPageCategoryList() {
+        return Result.success(categoryService.list());
     }
 
 

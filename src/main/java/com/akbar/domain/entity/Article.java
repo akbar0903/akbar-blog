@@ -1,9 +1,11 @@
-package com.akbar.entity;
+package com.akbar.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
 
@@ -11,18 +13,24 @@ import java.time.LocalDateTime;
 public class Article {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+    // 既不为空，也不为Null
+    @NotBlank(message = "标题不能为空！")
     private String title;
     private String summary;
+    @NotBlank(message = "内容不能为空！")
     private String content;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
+    //@URL(message = "封面图片格式不正确！")
     private String coverImage;
     private Integer commentCount;
     private Integer viewCount;
+    @NotBlank(message = "文章状态不能为空！")
     private String state;
     private Integer adminId;
+    @NotBlank(message = "文章分类不能为空！")
     private Integer categoryId;
     private Integer isTop;
     private Integer canComment;

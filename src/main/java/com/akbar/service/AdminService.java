@@ -1,6 +1,6 @@
 package com.akbar.service;
 
-import com.akbar.entity.Admin;
+import com.akbar.domain.entity.Admin;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 

@@ -1,6 +1,6 @@
 package com.akbar.mapper;
 
-import com.akbar.entity.Admin;
+import com.akbar.domain.entity.Admin;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 

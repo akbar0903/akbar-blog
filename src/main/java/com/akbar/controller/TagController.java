@@ -1,7 +1,7 @@
 package com.akbar.controller;
 
-import com.akbar.entity.Log;
-import com.akbar.entity.Tag;
+import com.akbar.domain.entity.Log;
+import com.akbar.domain.entity.Tag;
 import com.akbar.service.LogService;
 import com.akbar.service.TagService;
 import com.akbar.utils.Result;
@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -49,6 +50,15 @@ public class TagController {
         return Result.success(tagPage);
     }
 
+
+    /**
+     * 获取标签列表（不分页）
+     * @return
+     */
+    @GetMapping("/noPage")
+    public Result<List<Tag>> getNoPageTagList() {
+        return Result.success(tagService.list());
+    }
 
     /**
      * 添加标签

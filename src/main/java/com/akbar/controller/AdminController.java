@@ -1,8 +1,8 @@
 package com.akbar.controller;
 
-import com.akbar.entity.Admin;
-import com.akbar.entity.Log;
-import com.akbar.entity.UserAvatarHistory;
+import com.akbar.domain.entity.Admin;
+import com.akbar.domain.entity.Log;
+import com.akbar.domain.entity.UserAvatarHistory;
 import com.akbar.service.AdminService;
 import com.akbar.service.LogService;
 import com.akbar.service.UserAvatarHistoryService;
