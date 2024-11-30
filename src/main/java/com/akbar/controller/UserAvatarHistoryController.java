@@ -53,11 +53,6 @@ public class UserAvatarHistoryController {
      */
     @DeleteMapping("/{id}")
     public Result deleteUserAvatarHistory(@PathVariable Integer id) {
-        boolean result = userAvatarHistoryService.removeById(id);
-
-        if (!result) {
-            return Result.success("删除失败！");
-        }
 
         Map<String, Object> claims = ThreadLocalUtil.getClaims();
         String username = (String) claims.get("username");
@@ -68,10 +63,18 @@ public class UserAvatarHistoryController {
         log.setAdminId(adminId);
         log.setOperator(username);
         log.setLogLevel("danger");
-        log.setOperationType("删除");
-        log.setDetails("删除用户头像历史记录成功！");
+        log.setOperationType("删除用户头像历史记录");
+        UserAvatarHistory userAvatarHistory = userAvatarHistoryService.getById(id);
+        log.setDetails("删除了云端地址为："+ userAvatarHistory.getAvatarUrl() + "的用户头像历史记录！");
         log.setIpAddress(ipAddress);
         logService.save(log);
+
+        boolean result = userAvatarHistoryService.removeById(id);
+
+        if (!result) {
+            return Result.success("删除失败！");
+        }
+
 
         return Result.success("删除成功！");
     }

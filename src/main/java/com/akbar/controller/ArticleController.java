@@ -1,21 +1,34 @@
 package com.akbar.controller;
 
+import com.akbar.domain.entity.Article;
+import com.akbar.domain.entity.ArticleCoverImageHistory;
+import com.akbar.domain.entity.Log;
 import com.akbar.domain.vo.ArticleTagRequestVo;
 import com.akbar.domain.vo.ArticleVO;
+import com.akbar.service.ArticleCoverImageHistoryService;
 import com.akbar.service.ArticleService;
+import com.akbar.service.LogService;
 import com.akbar.utils.Result;
+import com.akbar.utils.ThreadLocalUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/article")
 public class ArticleController {
 
+    private final ArticleCoverImageHistoryService articleCoverImageHistoryService;
+    private final LogService logService;
     private final ArticleService articleService;
     @Autowired
-    public ArticleController(ArticleService articleService) {
+    public ArticleController(ArticleService articleService,ArticleCoverImageHistoryService articleCoverImageHistoryService,LogService logService) {
         this.articleService = articleService;
+        this.articleCoverImageHistoryService = articleCoverImageHistoryService;
+        this.logService = logService;
     }
 
     /**
@@ -49,7 +62,32 @@ public class ArticleController {
         boolean result = articleService.addArticle(articleTagRequestVo);
 
         if (!result) {
-            return Result.error("添加文章失败！");
+            return Result.error("添加文章失败，文章已存在或参数错误！");
+        }
+
+        Map<String, Object> claims = ThreadLocalUtil.getClaims();
+        Integer adminId = (Integer) claims.get("id");
+        String username = (String) claims.get("username");
+        String ipAddress = ThreadLocalUtil.getIP();
+
+        Log log = new Log();
+        log.setOperator(username);
+        log.setAdminId(adminId);
+        log.setOperationType("添加文章");
+        log.setLogLevel("success");
+        log.setDetails("添加文章：" + articleTagRequestVo.getTitle());
+        log.setIpAddress(ipAddress);
+        logService.save(log);
+
+        if (articleTagRequestVo.getCoverImage() != null) {
+            ArticleCoverImageHistory articleCoverImageHistory = new ArticleCoverImageHistory();
+            QueryWrapper<ArticleCoverImageHistory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("cover_url", articleTagRequestVo.getCoverImage());
+            ArticleCoverImageHistory history = articleCoverImageHistoryService.getOne(queryWrapper);
+            if (history == null) {
+                articleCoverImageHistory.setCoverUrl(articleTagRequestVo.getCoverImage());
+                articleCoverImageHistoryService.save(articleCoverImageHistory);
+            }
         }
 
         return Result.success();

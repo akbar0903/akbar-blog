@@ -5,6 +5,7 @@ import com.akbar.domain.vo.ArticleTagRequestVo;
 import com.akbar.domain.vo.ArticleVO;
 import com.akbar.mapper.ArticleMapper;
 import com.akbar.service.ArticleService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     private final ArticleMapper articleMapper;
+
     @Autowired
     public ArticleServiceImpl(ArticleMapper articleMapper) {
         this.articleMapper = articleMapper;
@@ -49,6 +51,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public boolean addArticle(ArticleTagRequestVo articleTagRequestVo) {
         Article article = new Article();
+
+        // 检查文章标题是否重复
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("title", articleTagRequestVo.getTitle());
+        Article article1 = this.getOne(queryWrapper);
+        if (article1!= null) {
+            return false;
+        }
 
         // 实体类之间属性映射
         BeanUtils.copyProperties(articleTagRequestVo, article);

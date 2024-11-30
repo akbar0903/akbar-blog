@@ -6,130 +6,229 @@ springboot，vue3个人博客项目。
 ## 数据库设计
 **代码：**
 ```sql
-CREATE DATABASE IF NOT EXISTS db_blog;
-USE db_blog;
+/*
+ Navicat Premium Data Transfer
 
--- 管理员
-CREATE TABLE IF NOT EXISTS tb_admin (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名',
-    password VARCHAR(100) NOT NULL COMMENT '密码',
-    salt VARCHAR(100) NOT NULL COMMENT '盐',
-    nickname VARCHAR(50) COMMENT '昵称',
-    avatar VARCHAR(255) COMMENT '头像',
-    github_url VARCHAR(255) COMMENT 'GitHub地址',
-    gitee_url VARCHAR(255) COMMENT 'Gitee地址',
-    bili_url VARCHAR(255) COMMENT '哔哩哔哩地址',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-);
+ Source Server         : MySQL8.0
+ Source Server Type    : MySQL
+ Source Server Version : 80036
+ Source Host           : localhost:3306
+ Source Schema         : db_blog
 
--- 访客（暂时这样，后续进行验证码登录或者邮箱登录的功能）
-CREATE TABLE IF NOT EXISTS tb_visitor (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名',
-    password VARCHAR(100) NOT NULL COMMENT '密码',
-    salt VARCHAR(100) NOT NULL COMMENT '盐',
-    nickname VARCHAR(50) COMMENT '昵称',
-    is_registered BOOLEAN DEFAULT FALSE COMMENT '是否为注册用户'
-);
+ Target Server Type    : MySQL
+ Target Server Version : 80036
+ File Encoding         : 65001
 
--- 分类
-CREATE TABLE IF NOT EXISTS tb_category (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    category_name VARCHAR(30) NOT NULL COMMENT '分类名称',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+ Date: 30/11/2024 14:35:13
+*/
 
--- 标签
-CREATE TABLE IF NOT EXISTS tb_tag (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    tag_name VARCHAR(30) NOT NULL COMMENT '标签名称',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
--- 文章
-CREATE TABLE IF NOT EXISTS tb_article (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    title VARCHAR(255) NOT NULL COMMENT '标题',
-    summary VARCHAR(500) COMMENT '摘要',
-    content TEXT NOT NULL COMMENT '内容',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    cover_image VARCHAR(255) COMMENT '封面图片',
-    comment_count INT UNSIGNED DEFAULT 0 COMMENT '评论数',
-    view_count INT UNSIGNED DEFAULT 0 COMMENT '观看次数',
-    state ENUM('draft', 'published') DEFAULT 'draft' COMMENT '文章状态',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    category_id INT UNSIGNED COMMENT '分类ID',
-    is_top BOOLEAN DEFAULT FALSE COMMENT '是否置顶',
-	can_comment BOOLEAN DEFAULT FALSE COMMENT '是否可以评论',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id),
-    FOREIGN KEY (category_id) REFERENCES tb_category(id)
-);
+-- ----------------------------
+-- Table structure for tb_admin
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_admin`;
+CREATE TABLE `tb_admin`  (
+                             `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                             `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
+                             `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '密码',
+                             `salt` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '盐',
+                             `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '昵称',
+                             `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像',
+                             `github_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'GitHub地址',
+                             `gitee_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Gitee地址',
+                             `bili_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '哔哩哔哩地址',
+                             `created_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                             `updated_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                             PRIMARY KEY (`id`) USING BTREE,
+                             UNIQUE INDEX `username`(`username` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 文章标签关联
-CREATE TABLE IF NOT EXISTS tb_article_tag (
-    article_id INT UNSIGNED COMMENT '文章ID',
-    tag_id INT UNSIGNED COMMENT '标签ID',
-    PRIMARY KEY (article_id, tag_id),
-    FOREIGN KEY (article_id) REFERENCES tb_article(id) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES tb_tag(id) ON DELETE CASCADE
-);
+-- ----------------------------
+-- Table structure for tb_article
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_article`;
+CREATE TABLE `tb_article`  (
+                               `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                               `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标题',
+                               `summary` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '摘要',
+                               `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '内容',
+                               `created_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                               `updated_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                               `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封面图片',
+                               `comment_count` int UNSIGNED NULL DEFAULT 0 COMMENT '评论数',
+                               `view_count` int UNSIGNED NULL DEFAULT 0 COMMENT '观看次数',
+                               `state` enum('草稿','发布') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '草稿' COMMENT '文章状态',
+                               `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                               `category_id` int UNSIGNED NULL DEFAULT NULL COMMENT '分类ID',
+                               `is_top` tinyint(1) NULL DEFAULT 1 COMMENT '是否置顶（0表示置顶，1表示不置顶）',
+                               `can_comment` tinyint(1) NULL DEFAULT 1 COMMENT '是否可以评论（0表示允许，1表示不允许）',
+                               PRIMARY KEY (`id`) USING BTREE,
+                               INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                               INDEX `category_id`(`category_id` ASC) USING BTREE,
+                               UNIQUE INDEX `unique_title`(`title` ASC) USING BTREE,
+                               CONSTRAINT `tb_article_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+                               CONSTRAINT `tb_article_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `tb_category` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 评论
-CREATE TABLE IF NOT EXISTS tb_comment (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    content TEXT NOT NULL COMMENT '内容',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    visitor_id INT UNSIGNED COMMENT '访客ID',
-    article_id INT UNSIGNED COMMENT '文章ID',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (visitor_id) REFERENCES tb_visitor(id) ON DELETE CASCADE,
-    FOREIGN KEY (article_id) REFERENCES tb_article(id) ON DELETE CASCADE,
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+-- ----------------------------
+-- Table structure for tb_article_cover_history
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_article_cover_history`;
+CREATE TABLE `tb_article_cover_history`  (
+                                             `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                                             `article_id` int UNSIGNED NOT NULL COMMENT '文章ID',
+                                             `cover_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '封面URL',
+                                             `uploaded_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
+                                             PRIMARY KEY (`id`) USING BTREE,
+                                             INDEX `article_id`(`article_id` ASC) USING BTREE,
+                                             CONSTRAINT `tb_article_cover_history_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `tb_article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 音乐
-CREATE TABLE IF NOT EXISTS tb_music (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    music_name VARCHAR(30) NOT NULL COMMENT '名称',
-    artist VARCHAR(30) NOT NULL COMMENT '艺术家',
-    audio_url VARCHAR(255) NOT NULL COMMENT '音频URL',
-    cover_url VARCHAR(255) COMMENT '封面URL',
-    duration INT UNSIGNED COMMENT '音频时长（秒）',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+-- ----------------------------
+-- Table structure for tb_article_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_article_tag`;
+CREATE TABLE `tb_article_tag`  (
+                                   `article_id` int UNSIGNED NOT NULL COMMENT '文章ID',
+                                   `tag_id` int UNSIGNED NOT NULL COMMENT '标签ID',
+                                   PRIMARY KEY (`article_id`, `tag_id`) USING BTREE,
+                                   INDEX `tag_id`(`tag_id` ASC) USING BTREE,
+                                   CONSTRAINT `tb_article_tag_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `tb_article` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+                                   CONSTRAINT `tb_article_tag_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tb_tag` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 轮播图(也可以是网站首页图片)
-CREATE TABLE IF NOT EXISTS tb_slider (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    image_url VARCHAR(255) NOT NULL COMMENT '图片URL',
-    sort_order INT UNSIGNED DEFAULT 0 COMMENT '排序值',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+-- ----------------------------
+-- Table structure for tb_category
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_category`;
+CREATE TABLE `tb_category`  (
+                                `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                                `category_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '分类名称',
+                                `created_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                `updated_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                                `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                                PRIMARY KEY (`id`) USING BTREE,
+                                INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                                CONSTRAINT `tb_category_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
--- 操作日志表
-CREATE TABLE IF NOT EXISTS tb_log (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
-    operation_type VARCHAR(30) NOT NULL COMMENT '操作类型',
-    operator VARCHAR(30) COMMENT '操作者',
-    details TEXT COMMENT '详情',
-    operated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
-    ip_address VARCHAR(50) COMMENT '操作IP地址',
-    user_agent VARCHAR(255) COMMENT '操作User-Agent',
-    admin_id INT UNSIGNED COMMENT '管理员ID',
-    FOREIGN KEY (admin_id) REFERENCES tb_admin(id)
-);
+-- ----------------------------
+-- Table structure for tb_comment
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_comment`;
+CREATE TABLE `tb_comment`  (
+                               `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                               `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '内容',
+                               `created_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                               `visitor_id` int UNSIGNED NULL DEFAULT NULL COMMENT '访客ID',
+                               `article_id` int UNSIGNED NULL DEFAULT NULL COMMENT '文章ID',
+                               `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                               PRIMARY KEY (`id`) USING BTREE,
+                               INDEX `visitor_id`(`visitor_id` ASC) USING BTREE,
+                               INDEX `article_id`(`article_id` ASC) USING BTREE,
+                               INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                               CONSTRAINT `tb_comment_ibfk_1` FOREIGN KEY (`visitor_id`) REFERENCES `tb_visitor` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+                               CONSTRAINT `tb_comment_ibfk_2` FOREIGN KEY (`article_id`) REFERENCES `tb_article` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+                               CONSTRAINT `tb_comment_ibfk_3` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_log
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_log`;
+CREATE TABLE `tb_log`  (
+                           `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                           `operation_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '操作类型',
+                           `operator` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作者',
+                           `details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '详情',
+                           `operated_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
+                           `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                           `log_level` enum('success','warning','danger','primary') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'primary',
+                           `ip_address` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '客户端ip地址',
+                           PRIMARY KEY (`id`) USING BTREE,
+                           INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                           CONSTRAINT `tb_log_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 300 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_music
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_music`;
+CREATE TABLE `tb_music`  (
+                             `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                             `music_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '名称',
+                             `artist` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '艺术家',
+                             `audio_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '音频URL',
+                             `cover_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封面URL',
+                             `duration` int UNSIGNED NULL DEFAULT NULL COMMENT '音频时长（秒）',
+                             `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                             PRIMARY KEY (`id`) USING BTREE,
+                             INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                             CONSTRAINT `tb_music_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_slider
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_slider`;
+CREATE TABLE `tb_slider`  (
+                              `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                              `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片URL',
+                              `sort_order` int UNSIGNED NULL DEFAULT 0 COMMENT '排序值',
+                              `is_active` tinyint(1) NULL DEFAULT 1 COMMENT '是否启用',
+                              `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                              PRIMARY KEY (`id`) USING BTREE,
+                              INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                              CONSTRAINT `tb_slider_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_tag`;
+CREATE TABLE `tb_tag`  (
+                           `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                           `tag_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标签名称',
+                           `created_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                           `updated_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                           `admin_id` int UNSIGNED NULL DEFAULT NULL COMMENT '管理员ID',
+                           PRIMARY KEY (`id`) USING BTREE,
+                           INDEX `admin_id`(`admin_id` ASC) USING BTREE,
+                           CONSTRAINT `tb_tag_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `tb_admin` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_user_avatar_history
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_user_avatar_history`;
+CREATE TABLE `tb_user_avatar_history`  (
+                                           `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                                           `user_id` int UNSIGNED NOT NULL COMMENT '用户ID',
+                                           `avatar_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '头像URL',
+                                           `uploaded_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
+                                           PRIMARY KEY (`id`) USING BTREE,
+                                           INDEX `user_id`(`user_id` ASC) USING BTREE,
+                                           CONSTRAINT `tb_user_avatar_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tb_admin` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for tb_visitor
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_visitor`;
+CREATE TABLE `tb_visitor`  (
+                               `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                               `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
+                               `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '密码',
+                               `salt` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '盐',
+                               `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '昵称',
+                               `is_registered` tinyint(1) NULL DEFAULT 0 COMMENT '是否为注册用户',
+                               PRIMARY KEY (`id`) USING BTREE,
+                               UNIQUE INDEX `username`(`username` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
 ```
 **解释：**
 1. `ON DELETE CASCADE`： 是一个外键约束操作，它指定当父表中的一条记录被删除时，所有与其相关联的子表中的记录也会被自动删除。

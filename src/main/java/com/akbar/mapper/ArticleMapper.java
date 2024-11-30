@@ -30,7 +30,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
             "LEFT JOIN tb_tag t ON at.tag_id = t.id",
             "WHERE 1=1",
             "<if test='categoryId != null'>AND a.category_id = #{categoryId}</if>",
-            "<if test='tagId != null'>AND t.id = #{tagId}</if>",
+            "<if test='tagId != null'>AND EXISTS (SELECT 1 FROM tb_article_tag at2 WHERE at2.article_id = a.id AND at2.tag_id = #{tagId})</if>",
             "<if test='state != null'>AND a.state = #{state}</if>",
             "GROUP BY a.id, c.category_name, a.state",
             "ORDER BY a.updated_time DESC",
