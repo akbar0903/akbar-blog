@@ -40,6 +40,23 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
 
     /**
+     * 获取文章详情
+     * @param id
+     * @return
+     */
+    @Select("<script>" +
+            "SELECT a.*, c.category_name, GROUP_CONCAT(t.tag_name) AS tagNames,  " +
+            "GROUP_CONCAT(t.id) AS tagIds " +
+            "FROM tb_article a " +
+            "LEFT JOIN tb_category c ON a.category_id = c.id " +
+            "LEFT JOIN tb_article_tag at ON a.id = at.article_id " +
+            "LEFT JOIN tb_tag t ON at.tag_id = t.id " +
+            "WHERE a.id = #{articleId} " +
+            "</script>")
+    ArticleVO getArticleById(@Param("articleId") Integer id);
+
+
+    /**
      * 插入文章标签
      * @param articleId
      * @param tagIds

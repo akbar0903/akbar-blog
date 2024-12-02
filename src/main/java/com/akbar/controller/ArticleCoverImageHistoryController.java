@@ -52,7 +52,7 @@ public class ArticleCoverImageHistoryController {
      * @return
      */
     @DeleteMapping("/{id}")
-    public Result deleteArticleCoverImageHistory(@PathVariable("id") Integer id) {
+    public Result deleteArticleCoverImageHistory(@PathVariable(value = "id") Integer id) {
         Map<String, Object> claims = ThreadLocalUtil.getClaims();
         String username = (String) claims.get("username");
         Integer adminId = (Integer) claims.get("id");

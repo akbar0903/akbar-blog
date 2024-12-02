@@ -10,6 +10,11 @@ public class ArticleTag {
     private Integer articleId;
     private Integer tagId;
 
+    public ArticleTag(Integer articleId, Integer tagId) {
+        this.articleId = articleId;
+        this.tagId = tagId;
+    }
+
     public Integer getArticleId() {
         return articleId;
     }

@@ -52,6 +52,18 @@ public class ArticleController {
         return Result.success(page);
     }
 
+
+    /**
+     *  获取文章详情
+     * @param articleId
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<ArticleVO> getArticleById(@PathVariable(value = "id") Integer articleId) {
+        ArticleVO articleVO = articleService.getArticleById(articleId);
+        return Result.success(articleVO);
+    }
+
     /**
      *  添加文章
      * @param articleTagRequestVo
@@ -89,6 +101,64 @@ public class ArticleController {
                 articleCoverImageHistoryService.save(articleCoverImageHistory);
             }
         }
+
+        return Result.success();
+    }
+
+
+    @DeleteMapping("/{id}")
+    public Result deleteArticle(@PathVariable(value = "id") Integer articleId) {
+        Map<String, Object> claims = ThreadLocalUtil.getClaims();
+        String username = (String) claims.get("username");
+        Integer adminId = (Integer) claims.get("id");
+        String ipAddress = ThreadLocalUtil.getIP();
+
+        Log log = new Log();
+        log.setOperator(username);
+        log.setAdminId(adminId);
+        log.setOperationType("删除文章");
+        log.setLogLevel("danger");
+        Article article = articleService.getById(articleId);
+        log.setDetails("删除文章：" + article.getTitle());
+        log.setIpAddress(ipAddress);
+        logService.save(log);
+
+        boolean result = articleService.removeById(articleId);
+        if (!result) {
+            return Result.error("删除文章失败！");
+        }
+
+        return Result.success();
+    }
+
+
+    /**
+     *  更新文章
+     * @param articleTagRequestVo
+     * @return
+     */
+    @PutMapping
+    public Result updateArticle(@RequestBody ArticleTagRequestVo articleTagRequestVo) {
+        Map<String, Object> claims = ThreadLocalUtil.getClaims();
+        String username = (String) claims.get("username");
+        Integer adminId = (Integer) claims.get("id");
+        String ipAddress = ThreadLocalUtil.getIP();
+
+        boolean updateResult = articleService.updateArticle(articleTagRequestVo);
+
+        if (!updateResult) {
+            return Result.error("更新文章失败，文章不存在或参数错误！");
+        }
+
+        Log log = new Log();
+        log.setOperator(username);
+        log.setAdminId(adminId);
+        log.setOperationType("更新文章");
+        log.setLogLevel("success");
+        Article article = articleService.getById(articleTagRequestVo.getId());
+        log.setDetails("更新后的文章：" + article.getTitle());
+        log.setIpAddress(ipAddress);
+        logService.save(log);
 
         return Result.success();
     }
