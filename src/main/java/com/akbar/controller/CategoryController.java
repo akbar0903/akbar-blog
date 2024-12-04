@@ -37,7 +37,7 @@ public class CategoryController {
      * @param pageSize
      * @return
      */
-    @GetMapping
+    @GetMapping("/list")
     public Result<Page<Category>> getCategoryList(
             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {

@@ -40,7 +40,7 @@ public class ArticleController {
      * @param pageSize
      * @return
      */
-    @GetMapping
+    @GetMapping("/list")
     public Result<Page<ArticleVO>> getArticleList(
             @RequestParam(value = "categoryId", required = false) Integer categoryId,
             @RequestParam(value = "tagId", required = false) Integer tagId,
@@ -106,7 +106,12 @@ public class ArticleController {
     }
 
 
-    @DeleteMapping("/{id}")
+    /**
+     *  删除文章
+     * @param articleId
+     * @return
+     */
+    @DeleteMapping("/del/{id}")
     public Result deleteArticle(@PathVariable(value = "id") Integer articleId) {
         Map<String, Object> claims = ThreadLocalUtil.getClaims();
         String username = (String) claims.get("username");

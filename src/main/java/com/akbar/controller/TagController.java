@@ -37,7 +37,7 @@ public class TagController {
      * @param pageSize
      * @return
      */
-    @GetMapping
+    @GetMapping("/list")
     public Result<Page<Tag>> getTagList(
             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {

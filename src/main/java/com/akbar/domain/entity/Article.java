@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
@@ -29,6 +30,7 @@ public class Article {
     private Integer viewCount;
     @NotBlank(message = "文章状态不能为空！")
     private String state;
+    @JsonIgnore
     private Integer adminId;
     @NotBlank(message = "文章分类不能为空！")
     private Integer categoryId;

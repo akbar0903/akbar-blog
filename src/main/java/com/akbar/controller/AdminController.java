@@ -222,7 +222,7 @@ public class AdminController {
      * 获取管理员信息
      * @return
      */
-    @GetMapping
+    @GetMapping("/info")
     public Result<Admin> getAdminInfo() {
         Map<String, Object> map = ThreadLocalUtil.getClaims();
         Integer adminId = (Integer) map.get("id");

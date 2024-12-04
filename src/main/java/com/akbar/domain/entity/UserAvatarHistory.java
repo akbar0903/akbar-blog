@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 public class UserAvatarHistory {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+    @JsonIgnore
     private Integer userId;
     private String avatarUrl;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

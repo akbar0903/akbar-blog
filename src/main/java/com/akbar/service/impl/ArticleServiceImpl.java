@@ -7,6 +7,7 @@ import com.akbar.domain.vo.ArticleVO;
 import com.akbar.mapper.ArticleMapper;
 import com.akbar.mapper.ArticleTagMapper;
 import com.akbar.service.ArticleService;
+import com.akbar.utils.ThreadLocalUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,6 +85,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 实体类之间属性映射
         BeanUtils.copyProperties(articleTagRequestVo, article);
 
+        Map<String, Object> claims = ThreadLocalUtil.getClaims();
+        Integer adminId = (Integer) claims.get("id");
+        article.setAdminId(adminId);
+        article.setAdminId(adminId);
+
         // 存储文章
         boolean articleSaved = this.save(article);
 
@@ -98,34 +105,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
 
-/*    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean updateArticle(ArticleTagRequestVo articleTagRequestVo) {
-        Article article = new Article();
-        BeanUtils.copyProperties(articleTagRequestVo, article);
-        boolean articleUpdated = this.updateById(article);
-
-        if (!articleUpdated) {
-            throw new RuntimeException("文章更新失败！");
-        }
-
-        // 删除原有标签关联
-        LambdaQueryWrapper<ArticleTag> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ArticleTag::getArticleId, article.getId());
-        articleTagMapper.delete(queryWrapper);
-
-        // 新的标签关联
-        List<ArticleTag> articleTags = articleTagRequestVo.getTagIds().stream()
-                .map(tagId -> new ArticleTag(article.getId(), tagId))
-                .collect(Collectors.toList());
-
-        if (!articleTags.isEmpty()) {
-            articleTagMapper.insert(articleTags);
-        }
-
-        return true;
-    }*/
-
+    /**
+     * 更新文章
+     * @param articleTagRequestVo
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     public boolean updateArticle(ArticleTagRequestVo articleTagRequestVo) {
         // 参数校验
