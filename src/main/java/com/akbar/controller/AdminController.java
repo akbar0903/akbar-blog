@@ -73,6 +73,12 @@ public class AdminController {
             claims.put("username", admin.getUsername());
             String token = JwtUtil.generateToken(claims);
 
+            Map<String, Object> map = ThreadLocalUtil.getClaims();
+            Integer adminId = (Integer) claims.get("id");
+            System.out.println("--------------------------------------------------------------------");
+            System.out.println("adminId: " + adminId);
+            System.out.println("---------------------------------------------------------------------");
+
             // 把token存储到redis中
             ValueOperations<String, String> operations = redisTemplate.opsForValue();
             operations.set(token, token, 12, TimeUnit.HOURS);
@@ -224,8 +230,7 @@ public class AdminController {
      */
     @GetMapping("/info")
     public Result<Admin> getAdminInfo() {
-        Map<String, Object> map = ThreadLocalUtil.getClaims();
-        Integer adminId = (Integer) map.get("id");
+        Integer adminId = 1; // 管理员ID固定为1
 
         Admin admin = adminService.getById(adminId);
 
